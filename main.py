@@ -25,7 +25,7 @@ def parse(filepath):
         dt_raw = datetime.strptime(date, "%B %d, %Y %I:%M %p")
         dt = dt_raw.strftime("%Y-%m-%dT%H%M")
 
-        title = title_line[2:].strip()
+        title = "__" + title_line[2:].strip()
 
         tags = ""
         if (
@@ -34,7 +34,7 @@ def parse(filepath):
             and lines[3].split()[0] == "Tags:"
         ):
             tags_line = lines[3]
-            tags = tags_line.split(":", 1)[1].strip().replace(" ", "")
+            tags = "__" + tags_line.split(":", 1)[1].strip().replace(" ", "")
 
         title = clean(title)
         tags = clean(tags)
@@ -64,14 +64,19 @@ def main():
     new_folder_name = input("Name of new folder: ")
     os.makedirs(new_folder_name, exist_ok=True)
 
+    successful_files = 0
     for filepath in Path(old_folder_destination).glob("*.md"):
         dt, title, tags = parse(filepath)
         try:
-            new_filename = f"{new_folder_name}/{dt}_{title}_{tags}.md"
+            new_filename = f"{new_folder_name}/{dt}{title}{tags}.md"
             shutil.copy2(filepath, new_filename)
+            successful_files += 1
             print(f"Successfully copied {new_filename}")
         except Exception as e:
-            raise ValueError(f"Error copying file: {e}")
+            raise ValueError(
+                f"Error copying file: {e}\nExiting with {successful_files} successful files"
+            )
+    print(f"Finished with {successful_files} successful files")
 
 
 if __name__ == "__main__":
